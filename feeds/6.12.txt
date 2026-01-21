@@ -1,5 +1,5 @@
-src-git packages https://mirrors.tuna.tsinghua.edu.cn/openwrt/packages.git
-src-git luci https://mirrors.tuna.tsinghua.edu.cn/openwrt/luci.git
-src-git routing https://mirrors.tuna.tsinghua.edu.cn/openwrt/routing.git
-src-git telephony https://mirrors.tuna.tsinghua.edu.cn/openwrt/telephony.git
-src-git video https://mirrors.tuna.tsinghua.edu.cn/openwrt/video.git
+src-git packages https://github.com/immortalwrt/packages.git
+src-git luci https://github.com/immortalwrt/luci.git
+src-git routing https://git.openwrt.org/feed/routing.git
+src-git telephony https://git.openwrt.org/feed/telephony.git
+src-git video https://github.com/openwrt/video.git
