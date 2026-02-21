@@ -29,6 +29,9 @@ git clone --depth=1 https://github.com/gdy666/luci-app-lucky package/lucky
 ./scripts/feeds update -a
 ./scripts/feeds install -a
 
+rm -rf feeds/luci/applications/luci-app-attendedsysupgrade
+rm -rf package/feeds/luci/luci-app-attendedsysupgrade
+
 # 写入补充配置
 cat >> .config <<EOF
 CONFIG_PACKAGE_luci-app-passwall2=y
