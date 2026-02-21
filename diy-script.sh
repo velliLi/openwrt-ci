@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 进入源码目录
-cd "$(dirname "$0")"
+# cd "$(dirname "$0")"
 
 # 修改默认 IP
 sed -i 's/192.168.1.1/192.168.2.1/' package/base-files/files/bin/config_generate
