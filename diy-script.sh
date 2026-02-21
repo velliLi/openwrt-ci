@@ -4,10 +4,10 @@
 # cd "$(dirname "$0")"
 
 # 修改默认 IP
-sed -i 's/192.168.1.1/192.168.2.1/' package/base-files/files/bin/config_generate
+sed -i 's/192.168.1.1/192.168.2.1/g' package/base-files/files/bin/config_generate
 
 # ttyd 免登录
-sed -i 's|/bin/login|/bin/login -f root|' feeds/packages/utils/ttyd/files/ttyd.config
+sed -i 's|/bin/login|/bin/login -f root|g' feeds/packages/utils/ttyd/files/ttyd.config
 
 # 删除旧版 passwall2 / argon
 rm -rf feeds/luci/applications/luci-app-passwall2
@@ -25,10 +25,14 @@ git clone --depth=1 https://github.com/jerrykuku/luci-app-argon-config package/l
 # Lucky
 git clone --depth=1 https://github.com/gdy666/luci-app-lucky package/lucky
 
+# MosDNS
+git clone --depth=1 https://github.com/sbwml/luci-app-mosdns package/luci-app-mosdns
+
 # 更新 feeds
 ./scripts/feeds update -a
 ./scripts/feeds install -a
 
+# 删除attendedsysupgrade
 rm -rf feeds/luci/applications/luci-app-attendedsysupgrade
 rm -rf package/feeds/luci/luci-app-attendedsysupgrade
 
