@@ -9,6 +9,9 @@ sed -i 's/192.168.1.1/192.168.2.1/g' package/base-files/files/bin/config_generat
 # ttyd 免登录
 sed -i 's|/bin/login|/bin/login -f root|g' feeds/packages/utils/ttyd/files/ttyd.config
 
+# Patch mbedtls to avoid GCC 14 memset inline issue
+sed -i 's/-O2/-O2 -fno-builtin-memset/g' package/libs/mbedtls/Makefile
+
 # 删除旧版 passwall2 / argon
 rm -rf feeds/luci/applications/luci-app-passwall2
 rm -rf feeds/luci/themes/luci-theme-argon
