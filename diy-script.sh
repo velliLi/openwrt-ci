@@ -49,7 +49,7 @@ git clone --depth=1 https://github.com/sbwml/luci-app-mosdns package/luci-app-mo
 # 5. 修复 mbedtls 在 GCC14 下 memset inline 失败
 # ================================
 # 修复 mbedtls GCC14 memset inline bug（CMake 级别补丁） 
-sed -i '1i add_compile_options(-fno-builtin-memset -fno-tree-loop-distribute-patterns)' \ package/libs/mbedtls/mbedtls-3.6.5/CMakeLists.txt
+# sed -i '1i add_compile_options(-fno-builtin-memset -fno-tree-loop-distribute-patterns)' \ package/libs/mbedtls/mbedtls-3.6.5/CMakeLists.txt
 
 
 # ================================
