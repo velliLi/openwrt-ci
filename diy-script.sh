@@ -16,7 +16,11 @@ rm -rf feeds/luci/applications/luci-app-passwall
 rm -rf feeds/luci/themes/luci-theme-argon
 rm -rf feeds/luci/applications/luci-app-argon-config
 
-# 3. 集成最新版 PassWall2 与 Argon (修正分支问题)
+# 3. 刷新并安装 Feeds
+./scripts/feeds update -a
+./scripts/feeds install -a
+
+# 4. 集成最新版 PassWall2 与 Argon (修正分支问题)
 # 核心依赖包
 git clone --depth=1 https://github.com/Openwrt-Passwall/openwrt-passwall-packages package/openwrt-passwall-packages
 # PassWall2 主程序
@@ -27,7 +31,7 @@ git clone --depth=1 https://github.com/jerrykuku/luci-app-argon-config package/l
 # 补全Lucky
 git clone --depth=1 https://github.com/gdy666/luci-app-lucky package/lucky
 
-# 4. 【关键步骤】物理剥离 PassWall2 的规则与 SS-libev 强依赖
+# 5. 【关键步骤】物理剥离 PassWall2 的规则与 SS-libev 强依赖
 # 这一步必须在 ./scripts/feeds install 之前或之后立即执行，建议对 package 目录进行全局替换
 # 移除所有相关的 Makefile 依赖项 (+ 表示强关联)
 find package/luci-app-passwall2/ -name "Makefile" | xargs sed -i 's/+v2ray-geoip //g'
@@ -36,10 +40,6 @@ find package/luci-app-passwall2/ -name "Makefile" | xargs sed -i 's/+v2ray-rules
 find package/luci-app-passwall2/ -name "Makefile" | xargs sed -i 's/+shadowsocks-libev-ss-local //g'
 find package/luci-app-passwall2/ -name "Makefile" | xargs sed -i 's/+shadowsocks-libev-ss-redir //g'
 find package/luci-app-passwall2/ -name "Makefile" | xargs sed -i 's/+shadowsocks-libev-ss-server //g'
-
-# 5. 刷新并安装 Feeds
-./scripts/feeds update -a
-./scripts/feeds install -a
 
 # 6. 统一防火墙至 NFT (解决 6.x 内核兼容性)
 find ./feeds/ -name "Makefile" | xargs sed -i 's/iptables /iptables-nft /g'
