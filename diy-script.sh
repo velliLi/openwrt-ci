@@ -31,22 +31,12 @@ git clone --depth=1 https://github.com/jerrykuku/luci-app-argon-config package/l
 # 补全Lucky
 git clone --depth=1 https://github.com/gdy666/luci-app-lucky package/lucky
 
-# 5. 【关键步骤】物理剥离 PassWall2 的规则与 SS-libev 强依赖
-# 这一步必须在 ./scripts/feeds install 之前或之后立即执行，建议对 package 目录进行全局替换
-# 移除所有相关的 Makefile 依赖项 (+ 表示强关联)
-find package/luci-app-passwall2/ -name "Makefile" | xargs sed -i 's/+v2ray-geoip //g'
-find package/luci-app-passwall2/ -name "Makefile" | xargs sed -i 's/+v2ray-geosite //g'
-find package/luci-app-passwall2/ -name "Makefile" | xargs sed -i 's/+v2ray-rules-dat //g'
-find package/luci-app-passwall2/ -name "Makefile" | xargs sed -i 's/+shadowsocks-libev-ss-local //g'
-find package/luci-app-passwall2/ -name "Makefile" | xargs sed -i 's/+shadowsocks-libev-ss-redir //g'
-find package/luci-app-passwall2/ -name "Makefile" | xargs sed -i 's/+shadowsocks-libev-ss-server //g'
-
-# 6. 统一防火墙至 NFT (解决 6.x 内核兼容性)
+# 5. 统一防火墙至 NFT (解决 6.x 内核兼容性)
 find ./feeds/ -name "Makefile" | xargs sed -i 's/iptables /iptables-nft /g'
 find ./package/ -name "Makefile" | xargs sed -i 's/iptables /iptables-nft /g'
 find ./feeds/ -name "Makefile" | xargs sed -i 's/xtables-legacy//g'
 
-# 7. 写入 .config 配置补丁 (精简与功能开关)
+# 6. 写入 .config 配置补丁 (精简与功能开关)
 cat >> .config <<EOF
 # 防火墙与证书补全
 CONFIG_PACKAGE_iptables-nft=y
@@ -58,7 +48,6 @@ CONFIG_PACKAGE_ca-bundle=y
 CONFIG_PACKAGE_luci-app-passwall2=y
 CONFIG_PACKAGE_luci-app-passwall2_Nftables_Transparent_Proxy=y
 CONFIG_PACKAGE_luci-app-passwall2_INCLUDE_SingBox=y
-CONFIG_PACKAGE_luci-app-passwall2_INCLUDE_Xray=y
 
 # 默认主题设置
 CONFIG_PACKAGE_luci-theme-argon=y
