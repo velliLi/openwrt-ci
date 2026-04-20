@@ -12,6 +12,7 @@ sed -i 's|/bin/login|/bin/login -f root|g' feeds/packages/utils/ttyd/files/ttyd.
 # 2. 清理冲突及旧版插件 (确保 feeds 更新前清理干净)
 rm -rf feeds/packages/net/smartdns
 rm -rf feeds/luci/applications/luci-app-smartdns
+rm -rf feeds/luci/applications/luci-app-mosdns
 rm -rf feeds/luci/applications/luci-app-passwall
 rm -rf feeds/luci/themes/luci-theme-argon
 rm -rf feeds/luci/applications/luci-app-argon-config
@@ -30,6 +31,8 @@ git clone --depth=1 https://github.com/jerrykuku/luci-theme-argon package/luci-t
 git clone --depth=1 https://github.com/jerrykuku/luci-app-argon-config package/luci-app-argon-config
 # 补全Lucky
 git clone --depth=1 https://github.com/gdy666/luci-app-lucky package/lucky
+# MosDNS
+git clone --depth=1 https://github.com/sbwml/luci-app-mosdns package/luci-app-mosdns
 
 # 5. 统一防火墙至 NFT (解决 6.x 内核兼容性)
 find ./feeds/ -name "Makefile" | xargs sed -i 's/iptables /iptables-nft /g'
