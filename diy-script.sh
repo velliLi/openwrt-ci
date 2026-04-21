@@ -59,6 +59,10 @@ CONFIG_PACKAGE_luci-app-passwall2_INCLUDE_SingBox=y
 CONFIG_PACKAGE_lucky=y
 CONFIG_PACKAGE_luci-app-lucky=y
 
+#mosdns
+CONFIG_PACKAGE_mosdns=y
+CONFIG_PACKAGE_luci-app-mosdns=y
+
 # 默认主题设置
 CONFIG_PACKAGE_luci-theme-argon=y
 CONFIG_PACKAGE_luci-app-argon-config=y
