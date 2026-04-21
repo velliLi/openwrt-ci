@@ -36,8 +36,6 @@ git clone --depth=1 https://github.com/sbwml/luci-app-mosdns package/luci-app-mo
 # SmartDNS
 git clone --depth=1 -b lede https://github.com/pymumu/luci-app-smartdns package/luci-app-smartdns
 git clone --depth=1 https://github.com/pymumu/openwrt-smartdns package/smartdns
-#OAF
-git clone --depth=1 https://github.com/destan19/OpenAppFilter package/OpenAppFilter
 
 # 5. 统一防火墙至 NFT (解决 6.x 内核兼容性)
 find ./feeds/ -name "Makefile" | xargs sed -i 's/iptables /iptables-nft /g'
