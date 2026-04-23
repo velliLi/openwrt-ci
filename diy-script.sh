@@ -62,6 +62,18 @@ CONFIG_PACKAGE_luci-app-lucky=y
 # 默认主题设置
 CONFIG_PACKAGE_luci-theme-argon=y
 CONFIG_PACKAGE_luci-app-argon-config=y
+
+#删除usb相关项
+CONFIG_PACKAGE_kmod-usb-core=n
+CONFIG_PACKAGE_kmod-usb-storage=n
+CONFIG_PACKAGE_kmod-usb-storage-extras=n
+CONFIG_PACKAGE_kmod-usb-storage-uas=n
+CONFIG_PACKAGE_automount=n
+CONFIG_DEFAULT_kmod-usb-dwc3=n
+CONFIG_DEFAULT_kmod-usb-dwc3-qcom=n
+CONFIG_DEFAULT_kmod-usb3=n
+CONFIG_PACKAGE_kmod-usb-common=n
+CONFIG_USB_SUPPORT=n
 EOF
 
 # 8. 最后刷新依赖
