@@ -74,6 +74,22 @@ CONFIG_DEFAULT_kmod-usb-dwc3-qcom=n
 CONFIG_DEFAULT_kmod-usb3=n
 CONFIG_PACKAGE_kmod-usb-common=n
 CONFIG_USB_SUPPORT=n
+
+#删除WiFi相关项
+CONFIG_DEFAULT_ipq-wifi-anysafe_e1=n
+CONFIG_DEFAULT_ipq-wifi-cmiot_ax18=n
+CONFIG_DEFAULT_ipq-wifi-glinet_gl-ax1800=n
+CONFIG_DEFAULT_ipq-wifi-glinet_gl-axt1800=n
+CONFIG_DEFAULT_ipq-wifi-jdcloud_re-cs-02=n
+CONFIG_DEFAULT_ipq-wifi-jdcloud_re-ss-01=n
+CONFIG_DEFAULT_ipq-wifi-link_nn6000=n
+CONFIG_DEFAULT_ipq-wifi-linksys_mr7350=n
+CONFIG_DEFAULT_ipq-wifi-linksys_mr7500=n
+CONFIG_DEFAULT_ipq-wifi-qihoo_360v6=n
+CONFIG_DEFAULT_ipq-wifi-redmi_ax5=n
+CONFIG_DEFAULT_ipq-wifi-redmi_ax5-jdcloud=n
+CONFIG_DEFAULT_ipq-wifi-xiaomi_ax1800=n
+CONFIG_DEFAULT_ipq-wifi-zn_m2=n
 EOF
 
 # 8. 最后刷新依赖
