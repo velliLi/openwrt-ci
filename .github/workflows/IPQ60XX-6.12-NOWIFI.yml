@@ -84,7 +84,7 @@ jobs:
       if: env.CACHE_TOOLCHAIN == 'true'
       uses: HiGarfield/cachewrtbuild@main
       with:
-        ccache: false
+        ccache: true
         mixkey: ${{ env.SOURCE_REPO }}-${{ env.REPO_BRANCH }}-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}
         prefix: ${{ env.OPENWRT_PATH }}
     
@@ -97,7 +97,6 @@ jobs:
     - name: Load Custom Configuration(加载自定义配置)
       run: |
         [ -e files ] && mv files $OPENWRT_PATH/files
-        [ -e $CONFIG_FILE ] && mv $CONFIG_FILE $OPENWRT_PATH/.config
         chmod +x $DIY_SCRIPT
         cd $OPENWRT_PATH
         $GITHUB_WORKSPACE/$DIY_SCRIPT
@@ -106,7 +105,7 @@ jobs:
       run: |
         cd $OPENWRT_PATH
         make defconfig
-        make download -j8
+        make download -j16
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
 
@@ -140,7 +139,7 @@ jobs:
         
         # 动态查找并移动所有 ipk 文件到 packages 文件夹
         mkdir -p packages
-        find $OPENWRT_PATH/bin/packages/ -type f -name "*.ipk" -exec cp -f {} packages/ \;
+        find $OPENWRT_PATH/bin/packages/ -type f -name "*.ipk" -exec mv -f {} packages/ \;
         
         # 打包 packages
         tar -zcf Packages.tar.gz packages

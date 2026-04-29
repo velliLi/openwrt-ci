@@ -43,54 +43,8 @@ find ./package/ -name "Makefile" | xargs sed -i 's/iptables /iptables-nft /g'
 find ./feeds/ -name "Makefile" | xargs sed -i 's/xtables-legacy//g'
 
 # 6. 写入 .config 配置补丁 (精简与功能开关)
-cat >> .config <<EOF
-# 防火墙与证书补全
-CONFIG_PACKAGE_iptables-nft=y
-CONFIG_PACKAGE_ip6tables-nft=y
-CONFIG_PACKAGE_xtables-nft=y
-CONFIG_PACKAGE_ca-bundle=y
-
-# PassWall2 推荐配置：使用 Sing-Box 核心并开启 NFT 代理
-CONFIG_PACKAGE_luci-app-passwall2=y
-CONFIG_PACKAGE_luci-app-passwall2_Nftables_Transparent_Proxy=y
-CONFIG_PACKAGE_luci-app-passwall2_INCLUDE_SingBox=y
-
-#Lucky
-CONFIG_PACKAGE_lucky=y
-CONFIG_PACKAGE_luci-app-lucky=y
-
-# 默认主题设置
-CONFIG_PACKAGE_luci-theme-argon=y
-CONFIG_PACKAGE_luci-app-argon-config=y
-
-#删除usb相关项
-CONFIG_PACKAGE_kmod-usb-core=n
-CONFIG_PACKAGE_kmod-usb-storage=n
-CONFIG_PACKAGE_kmod-usb-storage-extras=n
-CONFIG_PACKAGE_kmod-usb-storage-uas=n
-CONFIG_PACKAGE_automount=n
-CONFIG_DEFAULT_kmod-usb-dwc3=n
-CONFIG_DEFAULT_kmod-usb-dwc3-qcom=n
-CONFIG_DEFAULT_kmod-usb3=n
-CONFIG_PACKAGE_kmod-usb-common=n
-CONFIG_USB_SUPPORT=n
-
-#删除WiFi相关项
-CONFIG_DEFAULT_ipq-wifi-anysafe_e1=n
-CONFIG_DEFAULT_ipq-wifi-cmiot_ax18=n
-CONFIG_DEFAULT_ipq-wifi-glinet_gl-ax1800=n
-CONFIG_DEFAULT_ipq-wifi-glinet_gl-axt1800=n
-CONFIG_DEFAULT_ipq-wifi-jdcloud_re-cs-02=n
-CONFIG_DEFAULT_ipq-wifi-jdcloud_re-ss-01=n
-CONFIG_DEFAULT_ipq-wifi-link_nn6000=n
-CONFIG_DEFAULT_ipq-wifi-linksys_mr7350=n
-CONFIG_DEFAULT_ipq-wifi-linksys_mr7500=n
-CONFIG_DEFAULT_ipq-wifi-qihoo_360v6=n
-CONFIG_DEFAULT_ipq-wifi-redmi_ax5=n
-CONFIG_DEFAULT_ipq-wifi-redmi_ax5-jdcloud=n
-CONFIG_DEFAULT_ipq-wifi-xiaomi_ax1800=n
-CONFIG_DEFAULT_ipq-wifi-zn_m2=n
-EOF
+# 所有模块配置已统一移至 configs/diy.config
+# 此处仅运行 make defconfig 以解析完整依赖
 
 # 8. 最后刷新依赖
 make defconfig
