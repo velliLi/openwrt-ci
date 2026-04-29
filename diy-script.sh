@@ -42,9 +42,24 @@ find ./feeds/ -name "Makefile" | xargs sed -i 's/iptables /iptables-nft /g'
 find ./package/ -name "Makefile" | xargs sed -i 's/iptables /iptables-nft /g'
 find ./feeds/ -name "Makefile" | xargs sed -i 's/xtables-legacy//g'
 
-# 6. 写入 .config 配置补丁 (精简与功能开关)
-# 所有模块配置已统一移至 configs/diy.config
-# 此处仅运行 make defconfig 以解析完整依赖
+# 6. 写入 .config 配置补丁 (与 diy.config 配合作为双重保障)
+cat >> .config <<EOF
+# PassWall2 推荐配置：使用 Sing-Box 核心并开启 NFT 代理
+CONFIG_PACKAGE_luci-app-passwall2=y
+CONFIG_PACKAGE_luci-app-passwall2_Nftables_Transparent_Proxy=y
+CONFIG_PACKAGE_luci-app-passwall2_INCLUDE_SingBox=y
+
+#Lucky
+CONFIG_PACKAGE_lucky=y
+CONFIG_PACKAGE_luci-app-lucky=y
+
+# 默认主题设置
+CONFIG_PACKAGE_luci-theme-argon=y
+CONFIG_PACKAGE_luci-app-argon-config=y
+
+# 防火墙与证书补全
+CONFIG_PACKAGE_ca-bundle=y
+EOF
 
 # 8. 最后刷新依赖
 make defconfig
