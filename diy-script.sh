@@ -16,6 +16,11 @@ rm -rf feeds/luci/applications/luci-app-mosdns
 rm -rf feeds/luci/applications/luci-app-passwall
 rm -rf feeds/luci/themes/luci-theme-argon
 rm -rf feeds/luci/applications/luci-app-argon-config
+rm -rf feeds/packages/net/v2ray-geodata
+
+# 清理旧版 mosdns 和 v2ray-geodata 的 Makefile (避免包名冲突)
+find ./ | grep Makefile | grep mosdns | xargs rm -f 2>/dev/null || true
+find ./ | grep Makefile | grep v2ray-geodata | xargs rm -f 2>/dev/null || true
 
 # 3. 刷新并安装 Feeds
 ./scripts/feeds update -a
@@ -31,8 +36,13 @@ git clone --depth=1 https://github.com/jerrykuku/luci-theme-argon package/luci-t
 git clone --depth=1 https://github.com/jerrykuku/luci-app-argon-config package/luci-app-argon-config
 # 补全Lucky
 git clone --depth=1 https://github.com/gdy666/luci-app-lucky package/lucky
-# MosDNS
-git clone --depth=1 https://github.com/sbwml/luci-app-mosdns package/luci-app-mosdns
+# MosDNS v5 (包含 mosdns 二进制 + luci-app + v2dat)
+git clone --depth=1 https://github.com/sbwml/luci-app-mosdns -b v5 package/mosdns
+git clone --depth=1 https://github.com/sbwml/v2ray-geodata package/v2ray-geodata
+
+# 更新 golang 至 1.24+ (mosdns v5 编译需要)
+rm -rf feeds/packages/lang/golang
+git clone https://github.com/sbwml/packages_lang_golang -b 24.x feeds/packages/lang/golang
 # SmartDNS
 git clone --depth=1 -b lede https://github.com/pymumu/luci-app-smartdns package/luci-app-smartdns
 git clone --depth=1 https://github.com/pymumu/openwrt-smartdns package/smartdns
