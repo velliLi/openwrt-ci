@@ -55,6 +55,10 @@ CONFIG_PACKAGE_luci-app-lucky=y
 CONFIG_PACKAGE_luci-theme-argon=y
 CONFIG_PACKAGE_luci-app-argon-config=y
 
+# WireGuard
+CONFIG_PACKAGE_wireguard-tools=y
+CONFIG_PACKAGE_luci-proto-wireguard=y
+
 # 防火墙与证书补全
 CONFIG_PACKAGE_ca-bundle=y
 EOF
