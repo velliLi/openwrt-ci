@@ -153,17 +153,26 @@ jobs:
         name: ${{ env.SOURCE_REPO }}-firmware-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}-${{ env.FILE_DATE }}
         path: ${{ env.FIRMWARE_PATH }}
 
+    - name: Set Release Tag(设置Release标签)
+      id: release_tag
+      run: |
+        TAG="${{ github.event.release.tag_name }}"
+        if [ -z "$TAG" ]; then
+          TAG="Release-DIY-${{ env.FILE_DATE }}"
+        fi
+        echo "tag=$TAG" >> $GITHUB_OUTPUT
+
     - name: Upload Firmware To Release(发布固件)
       if: steps.compile.outputs.status == 'success' && env.FIRMWARE_RELEASE == 'true'
       uses: ncipollo/release-action@v1
       with:
-        name: R${{ env.DATE }} for ${{ env.FIRMWARE_TAG }}
         allowUpdates: true
-        tag: ${{ env.FIRMWARE_TAG }}
+        replacesArtifacts: true
+        tag: ${{ steps.release_tag.outputs.tag }}
         token: ${{ secrets.GITHUB_TOKEN }}
         artifacts: ${{ env.FIRMWARE_PATH }}/*
         body: |
-          **This is OpenWrt Firmware for ${{ env.FIRMWARE_TAG }}**
+          **This is OpenWrt Firmware**
           ### 📒 固件信息
           - 基于自定义 diy.config + diy-script.sh 构建
           - 💻 源码: ${{ env.REPO_URL }}
