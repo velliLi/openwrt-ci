@@ -1,0 +1,122 @@
+name: IPQ60XX-6.12-NOWIFI-Speed-Optimized
+
+on:
+  workflow_dispatch:
+
+env:
+  REPO_URL: https://github.com/LiBwrt/openwrt-6.x.git
+  REPO_BRANCH: main-nss
+  CONFIG_FILE: configs/diy.config
+  DIY_SCRIPT: diy-script.sh
+  CLASH_KERNEL: amd64
+  CACHE_TOOLCHAIN: true
+  UPLOAD_BIN_DIR: false
+  FIRMWARE_RELEASE: true
+  FIRMWARE_TAG: IPQ60XX-6.12-NOWIFI
+  TZ: Asia/Shanghai
+
+jobs:
+  Build:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Initialization Environment
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      run: |
+        sudo -E apt-get -yqq update
+        sudo -E apt-get -yqq install dos2unix libfuse-dev build-essential
+        sudo bash -c 'bash <(curl -sL https://build-scripts.immortalwrt.org/init_build_environment.sh)'
+        sudo timedatectl set-timezone "$TZ"
+
+    - name: Combine Disks
+      uses: easimon/maximize-build-space@master
+      with:
+        swap-size-mb: 1024
+        temp-reserve-mb: 100
+        root-reserve-mb: 2048
+        remove-dotnet: 'true'
+        remove-android: 'true'
+
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        ref: optimize-plugin-config
+
+    - name: Clone Source Code
+      run: |
+        git clone --depth 1 -b $REPO_BRANCH --single-branch $REPO_URL openwrt
+        cd openwrt
+        echo "OPENWRT_PATH=$PWD" >> $GITHUB_ENV
+        echo "VERSION_KERNEL=$(grep -oP 'LINUX_KERNEL_HASH-\K[0-9]+\.[0-9]+\.[0-9]+' target/linux/generic/kernel-6.12)" >> $GITHUB_ENV
+
+    - name: Generate Variables
+      run: |
+        cp $CONFIG_FILE $OPENWRT_PATH/.config
+        cd $OPENWRT_PATH
+        make defconfig
+        echo "DEVICE_TARGET=$(grep CONFIG_TARGET_BOARD .config | cut -d'=' -f2 | tr -d '\"')" >> $GITHUB_ENV
+        echo "DEVICE_SUBTARGET=$(grep CONFIG_TARGET_SUBTARGET .config | cut -d'=' -f2 | tr -d '\"')" >> $GITHUB_ENV
+
+    - name: Cache Toolchain
+      if: env.CACHE_TOOLCHAIN == 'true'
+      uses: HiGarfield/cachewrtbuild@main
+      with:
+        ccache: true
+        mixkey: ${{ env.REPO_BRANCH }}-${{ env.DEVICE_TARGET }}
+        prefix: ${{ env.OPENWRT_PATH }}
+
+    - name: Install Feeds
+      run: |
+        cd $OPENWRT_PATH
+        ./scripts/feeds update -a
+        ./scripts/feeds install -a
+
+    - name: Load Custom Configuration
+      run: |
+        [ -e files ] && mv files $OPENWRT_PATH/files
+        [ -e $CONFIG_FILE ] && mv $CONFIG_FILE $OPENWRT_PATH/.config
+        chmod +x $DIY_SCRIPT
+        cd $OPENWRT_PATH
+        $GITHUB_WORKSPACE/$DIY_SCRIPT
+
+    - name: Download DL Package
+      run: |
+        cd $OPENWRT_PATH
+        make defconfig
+        make download -j16
+        find dl -size -1024c -delete
+
+    - name: Compile Firmware
+      id: compile
+      run: |
+        cd $OPENWRT_PATH
+        make -j$(nproc) || make -j1 V=s
+        echo "status=success" >> $GITHUB_OUTPUT
+        echo "DATE=$(date +"%Y-%m-%d %H:%M")" >> $GITHUB_ENV
+
+    - name: Organize Files
+      if: steps.compile.outputs.status == 'success'
+      run: |
+        cd $OPENWRT_PATH/bin/targets/*/*
+        echo "FIRMWARE_PATH=$PWD" >> $GITHUB_ENV
+        mkdir -p packages
+        find $OPENWRT_PATH/bin/packages/ -type f -name "*.ipk" -exec mv -f {} packages/ \;
+        tar -zcf Packages.tar.gz packages
+        cp $OPENWRT_PATH/.config build.config
+        rm -rf packages feeds.buildinfo version.buildinfo
+
+    - name: Upload Firmware To Release
+      if: steps.compile.outputs.status == 'success' && env.FIRMWARE_RELEASE == 'true'
+      uses: ncipollo/release-action@v1
+      with:
+        name: R${{ env.DATE }} for ${{ env.FIRMWARE_TAG }}
+        allowUpdates: true
+        tag: ${{ env.FIRMWARE_TAG }}
+        token: ${{ secrets.GITHUB_TOKEN }}
+        artifacts: ${{ env.FIRMWARE_PATH }}/*
+        body: |
+          **IPQ60XX 6.12 内核固件 (无WIFI/NSS加速)**
+          - 内核版本：${{ env.VERSION_KERNEL }}
+          - 源码地址：${{ env.REPO_URL }}
+          - 默认IP：192.168.2.1 / 密码：password
