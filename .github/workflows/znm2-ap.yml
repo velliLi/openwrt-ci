@@ -7,7 +7,6 @@ env:
   REPO_URL: https://github.com/LiBwrt/openwrt-6.x.git
   REPO_BRANCH: main-nss
   CONFIG_FILE: configs/znm2-ap.config
-  DIY_SCRIPT: diy-ap.sh
   CACHE_TOOLCHAIN: true
   UPLOAD_BIN_DIR: false
   FIRMWARE_RELEASE: true
@@ -72,16 +71,12 @@ jobs:
         ./scripts/feeds update -a
         ./scripts/feeds install -a
 
-    - name: Load Pure AP Files (加载纯AP首启配置)
+    - name: Load Pure AP Files + Defconfig (加载纯AP首启配置)
       run: |
         cp -r $GITHUB_WORKSPACE/files-znm2-ap $OPENWRT_PATH/files
         chmod +x $OPENWRT_PATH/files/etc/uci-defaults/*.sh
-
-    - name: Run DIY Script (集成PassWall2)
-      run: |
         cd $OPENWRT_PATH
-        chmod +x $GITHUB_WORKSPACE/$DIY_SCRIPT
-        $GITHUB_WORKSPACE/$DIY_SCRIPT
+        make defconfig
 
     - name: Download DL Packages
       run: |
@@ -115,9 +110,8 @@ jobs:
         artifacts: ${{ env.FIRMWARE_PATH }}/*zn_m2*-sysupgrade.bin
         body: |
           **ZN-M2 专用 OpenWrt 纯AP固件**
-          - 纯AP模式：无路由、无防火墙、无DHCP服务
+          - 纯AP模式：无路由、无防火墙、无DHCP服务、无代理插件
           - 所有网口（lan1/lan2/lan3/wan）+ 双频WiFi 桥接为 br-lan
-          - 集成 PassWall2（Sing-Box 核心 + Nftables 透明代理）
           - br-lan 通过 DHCP 自动获取管理IP（在上级路由器客户端列表中找主机名 ZN-M2-AP）
           - 默认WiFi：SSID `ZN-M2-AP`（2.4G/5G 同名），默认无密码，请及时修改
           - 默认SSH：root / password
