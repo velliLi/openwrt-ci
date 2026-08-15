@@ -2,6 +2,8 @@ name: ZN-M2-AP
 
 on:
   workflow_dispatch:
+  repository_dispatch:
+    types: [build]
 
 env:
   REPO_URL: https://github.com/LiBwrt/openwrt-6.x.git
