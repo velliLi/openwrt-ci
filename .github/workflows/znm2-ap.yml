@@ -1,0 +1,128 @@
+name: ZN-M2-AP
+
+on:
+  workflow_dispatch:
+
+env:
+  REPO_URL: https://github.com/LiBwrt/openwrt-6.x.git
+  REPO_BRANCH: main-nss
+  CONFIG_FILE: configs/znm2-ap.config
+  DIY_SCRIPT: diy-ap.sh
+  CACHE_TOOLCHAIN: true
+  UPLOAD_BIN_DIR: false
+  FIRMWARE_RELEASE: true
+  FIRMWARE_TAG: ZN-M2-AP
+  TZ: Asia/Shanghai
+
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check Server Performance
+      run: |
+        echo "CPU: $(nproc) cores"
+        echo "Memory:"
+        free -h
+
+    - name: Init Environment
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      run: |
+        sudo bash -c 'bash <(curl -sL https://build-scripts.immortalwrt.org/init_build_environment.sh)'
+        sudo apt -yqq install dos2unix libfuse-dev
+
+    - name: Combine Disks
+      uses: easimon/maximize-build-space@master
+      with:
+        swap-size-mb: 1024
+        temp-reserve-mb: 100
+        root-reserve-mb: 1024
+
+    - name: Checkout
+      uses: actions/checkout@main
+
+    - name: Clone Source Code
+      run: |
+        git clone --depth 1 -b $REPO_BRANCH $REPO_URL openwrt
+        cd openwrt
+        echo "OPENWRT_PATH=$PWD" >> $GITHUB_ENV
+        VERSION_INFO=$(git show -s --date=short --format="作者: %an<br/>时间: %cd<br/>内容: %s<br/>hash: %H")
+        echo "VERSION_INFO=$VERSION_INFO" >> $GITHUB_ENV
+        VERSION_KERNEL=$(grep -oP 'LINUX_KERNEL_HASH-\K[0-9]+\.[0-9]+\.[0-9]+' target/linux/generic/kernel-6.12)
+        echo "VERSION_KERNEL=$VERSION_KERNEL" >> $GITHUB_ENV
+
+    - name: Load Custom Config (加载ZN-M2纯AP配置)
+      run: |
+        cp $GITHUB_WORKSPACE/$CONFIG_FILE $OPENWRT_PATH/.config
+        echo ">>> 已加载自定义 ZN-M2 纯AP配置"
+        grep "DEVICE_zn_m2=y" $OPENWRT_PATH/.config || (echo "❌ ZN-M2 配置未加载成功" && exit 1)
+
+    - name: Cache Toolchain
+      if: env.CACHE_TOOLCHAIN == 'true'
+      uses: HiGarfield/cachewrtbuild@main
+      with:
+        ccache: false
+        mixkey: znm2-ap
+        prefix: ${{ env.OPENWRT_PATH }}
+
+    - name: Install Feeds
+      run: |
+        cd $OPENWRT_PATH
+        ./scripts/feeds update -a
+        ./scripts/feeds install -a
+
+    - name: Load Pure AP Files (加载纯AP首启配置)
+      run: |
+        cp -r $GITHUB_WORKSPACE/files-znm2-ap $OPENWRT_PATH/files
+        chmod +x $OPENWRT_PATH/files/etc/uci-defaults/*.sh
+
+    - name: Run DIY Script (集成PassWall2)
+      run: |
+        cd $OPENWRT_PATH
+        chmod +x $GITHUB_WORKSPACE/$DIY_SCRIPT
+        $GITHUB_WORKSPACE/$DIY_SCRIPT
+
+    - name: Download DL Packages
+      run: |
+        cd $OPENWRT_PATH
+        make download -j8
+        find dl -size -1024c -exec rm -f {} \;
+
+    - name: Compile Firmware
+      id: compile
+      run: |
+        cd $OPENWRT_PATH
+        make -j$(nproc) || make -j1 V=s
+        echo "status=success" >> $GITHUB_OUTPUT
+        echo "FILE_DATE=$(date +"%Y.%m.%d")" >> $GITHUB_ENV
+
+    - name: Organize Files
+      if: steps.compile.outputs.status == 'success'
+      run: |
+        cd $OPENWRT_PATH/bin/targets/*/*
+        echo "FIRMWARE_PATH=$PWD" >> $GITHUB_ENV
+        cp $OPENWRT_PATH/.config build.config
+
+    - name: Upload Firmware To Release
+      if: steps.compile.outputs.status == 'success' && env.FIRMWARE_RELEASE == 'true'
+      uses: ncipollo/release-action@v1
+      with:
+        name: ZN-M2 纯AP Release ${{ env.FILE_DATE }}
+        allowUpdates: false
+        tag: ZN-M2-AP-${{ env.FILE_DATE }}
+        token: ${{ secrets.GITHUB_TOKEN }}
+        artifacts: ${{ env.FIRMWARE_PATH }}/*zn_m2*-sysupgrade.bin
+        body: |
+          **ZN-M2 专用 OpenWrt 纯AP固件**
+          - 纯AP模式：无路由、无防火墙、无DHCP服务
+          - 所有网口（lan1/lan2/lan3/wan）+ 双频WiFi 桥接为 br-lan
+          - 集成 PassWall2（Sing-Box 核心 + Nftables 透明代理）
+          - br-lan 通过 DHCP 自动获取管理IP（在上级路由器客户端列表中找主机名 ZN-M2-AP）
+          - 默认WiFi：SSID `ZN-M2-AP`（2.4G/5G 同名），默认无密码，请及时修改
+          - 默认SSH：root / password
+          - 内核版本：${{ env.VERSION_KERNEL }}
+          - 源码：${{ env.REPO_URL }}
+          - 分支：${{ env.REPO_BRANCH }}
+          - 编译前主源码更新记录：
+          - ${{ env.VERSION_INFO }}
