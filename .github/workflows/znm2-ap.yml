@@ -104,8 +104,8 @@ jobs:
       uses: ncipollo/release-action@v1
       with:
         name: ZN-M2 纯AP Release ${{ env.FILE_DATE }}
-        allowUpdates: false
-        tag: ZN-M2-AP-${{ env.FILE_DATE }}
+        allowUpdates: true
+        tag: ZN-M2-AP
         token: ${{ secrets.GITHUB_TOKEN }}
         artifacts: ${{ env.FIRMWARE_PATH }}/*zn_m2*-sysupgrade.bin
         body: |
